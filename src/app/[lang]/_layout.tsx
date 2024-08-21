@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Slot, usePathname, useRouter } from 'expo-router';
@@ -11,6 +11,7 @@ import { Drawer } from 'expo-router/drawer';
 import { colorScheme } from '@/src/hooks/useColorScheme';
 import Navbar from '@/src/components/Navbar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import ModalComponent from '@/src/components/Modal';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -23,8 +24,15 @@ function LayoutContent() {
   const pathname = usePathname();
   const router = useRouter();
   const { language, setLanguage } = useLanguage();
-
+  const [modalVisible, setModalVisible] = useState(false);
   useEffect(() => {
+    async function initialize() {
+      const hasVisited = await AsyncStorage.getItem('hasVisited');
+      if (!hasVisited) {
+        setModalVisible(true);
+        await AsyncStorage.setItem('hasVisited', 'true');
+      }
+    }
     if (loaded) {
       SplashScreen.hideAsync();
 
@@ -45,15 +53,13 @@ function LayoutContent() {
           }
         }
       };
-
       handleRedirect();
+      initialize();
     }
   }, [loaded, pathname, language, setLanguage, router]);
-
   if (!loaded) {
     return null;
   }
-
   return (
     <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <View style={{ flex: 1 }}>
@@ -71,6 +77,10 @@ function LayoutContent() {
           <Drawer />
         )}
       </View>
+      <ModalComponent
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+      />
     </NavigationThemeProvider>
   );
 }
