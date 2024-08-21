@@ -1,17 +1,16 @@
 // src/app/_layout.tsx
 import React, { useEffect, useState } from 'react';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack, usePathname, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from '../hooks/useColorScheme';
+import { ThemeProvider } from '../contexts/ThemeContext';
 import { LanguageProvider, useLanguage, Language } from '../contexts/LanguageContext';
+import { colorScheme } from '../hooks/useColorScheme';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
-
 function LayoutContent() {
-  const colorScheme = useColorScheme();
   const [fontsLoaded] = useFonts({
     SpaceMono: require('../../assets/fonts/SpaceMono-Regular.ttf'),
   });
@@ -40,22 +39,27 @@ function LayoutContent() {
   }, [isReady, pathname]);
 
   if (!isReady) {
-    return null; // Render nothing until fonts are loaded
+    return null;
   }
 
+  const currentTheme = colorScheme === 'dark' ? DarkTheme : DefaultTheme;
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <NavigationThemeProvider value={currentTheme}>
       <Stack>
         <Stack.Screen name="[lang]" options={{ headerShown: false }} />
       </Stack>
-    </ThemeProvider>
+    </NavigationThemeProvider>
   );
 }
 
 export default function RootLayout() {
   return (
     <LanguageProvider>
-      <LayoutContent />
+      <ThemeProvider>
+        <LayoutContent />
+      </ThemeProvider>
+
     </LanguageProvider>
   );
 }
