@@ -11,7 +11,7 @@ interface ThemeContextProps {
 
 export const ThemeContext = createContext<ThemeContextProps>({
   theme: 'system',
-  setTheme: () => {},
+  setTheme: () => { },
 });
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {

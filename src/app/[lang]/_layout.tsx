@@ -1,50 +1,61 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import React, { useEffect } from 'react';
+import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Slot, usePathname } from 'expo-router';
+import { Slot, usePathname, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import React, { useEffect, useState } from 'react';
-import { Language, LanguageProvider, useLanguage } from '../../contexts/LanguageContext';
+import { Language, useLanguage } from '../../contexts/LanguageContext';
 import { useIsLargeScreen } from '../../hooks/useIsLargeScreen';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ScrollView, View } from 'react-native';
-import ModalComponent from '@/src/components/Modal';
 import UnderNav from '@/src/components/UnderNav';
-import Navbar from '@/src/components/Navbar';
-import { Drawer } from 'expo-router/drawer'
+import { Drawer } from 'expo-router/drawer';
 import { colorScheme } from '@/src/hooks/useColorScheme';
+import Navbar from '@/src/components/Navbar';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 function LayoutContent() {
-
   const isLargeScreen = useIsLargeScreen();
   const [loaded] = useFonts({
     SpaceMono: require('../../../assets/fonts/SpaceMono-Regular.ttf'),
   });
   const pathname = usePathname();
-  const language = pathname.split('/')[1] as Language; // Extract language from pathname
-  const { setLanguage } = useLanguage();
-  const [modalVisible, setModalVisible] = useState(false);
+  const router = useRouter();
+  const { language, setLanguage } = useLanguage();
 
   useEffect(() => {
-    async function initialize() {
-      const hasVisited = await AsyncStorage.getItem('hasVisited');
-      if (!hasVisited) {
-        setModalVisible(true);
-        await AsyncStorage.setItem('hasVisited', 'true');
-      }
-    }
     if (loaded) {
       SplashScreen.hideAsync();
-      setLanguage(language); // Set language based on pathname
-      initialize();
+
+      const handleRedirect = async () => {
+        const urlLanguage = (pathname.split('/')[1] as Language) || 'en';
+
+        // Validate and set the language
+        const validLanguages: Language[] = ['en', 'fr'];
+        if (validLanguages.includes(urlLanguage)) {
+          setLanguage(urlLanguage);
+          await AsyncStorage.setItem('lastValidLanguage', urlLanguage);
+        } else {
+          const lastValidLanguage = await AsyncStorage.getItem('lastValidLanguage');
+          if (lastValidLanguage) {
+            router.push(`/${lastValidLanguage}`);
+          } else {
+            router.push('/en');
+          }
+        }
+      };
+
+      handleRedirect();
     }
-  }, [loaded, language]);
+  }, [loaded, pathname, language, setLanguage, router]);
+
   if (!loaded) {
     return null;
   }
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <View style={{ flex: 1 }}>
         {isLargeScreen ? (
           <View style={{ flex: 1 }}>
@@ -59,19 +70,11 @@ function LayoutContent() {
         ) : (
           <Drawer />
         )}
-        <ModalComponent
-          visible={modalVisible}
-          onClose={() => setModalVisible(false)}
-        />
       </View>
-    </ThemeProvider>
+    </NavigationThemeProvider>
   );
 }
 
-export default function RootLayout() {
-  return (
-    <LanguageProvider>
-      <LayoutContent />
-    </LanguageProvider>
-  );
+export default function LanguageLayout() {
+  return <LayoutContent />;
 }
