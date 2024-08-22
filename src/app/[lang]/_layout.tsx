@@ -7,17 +7,19 @@ import { Language, useLanguage } from '../../contexts/LanguageContext';
 import { useIsLargeScreen } from '../../hooks/useIsLargeScreen';
 import { ScrollView, View } from 'react-native';
 import UnderNav from '@/src/components/UnderNav';
-import { Drawer } from 'expo-router/drawer';
 import Navbar from '@/src/components/Navbar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ModalComponent from '@/src/components/Modal';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import CustomDrawerContent from '@/src/navigation/CustomDrawerContent';
-import { Colors } from '@/src/constants/Colors';
 import { ThemeContext } from '@/src/contexts/ThemeContext';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import DrawerGroup from './(drawer)/_layout';
+import ContactPage from './(tabs)/contact';
+import Promotion from './(tabs)/promotion';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+const Tab = createBottomTabNavigator();
 
 function LayoutContent() {
   const { theme } = useContext(ThemeContext);
@@ -81,18 +83,11 @@ function LayoutContent() {
             </ScrollView>
           </View>
         ) : (
-          <GestureHandlerRootView style={{ flex: 1 }}>
-            <Drawer drawerContent={CustomDrawerContent} 
-              screenOptions={{
-                drawerActiveBackgroundColor: isDarkMode ? Colors.dark.tabIconSelected : Colors.light.tabIconSelected,
-                drawerActiveTintColor: isDarkMode ? Colors.dark.text : Colors.light.text,
-                drawerStyle: {
-                  backgroundColor: isDarkMode ? Colors.dark.background : Colors.light.background
-                }
-              }}>
-
-            </Drawer>
-          </GestureHandlerRootView>
+          <Tab.Navigator initialRouteName='home' screenOptions={{ headerShown: false }}>
+            <Tab.Screen name='home' component={DrawerGroup} />
+            <Tab.Screen name='contact' component={ContactPage} />
+            <Tab.Screen name='promotion' component={Promotion} />
+          </Tab.Navigator>
         )}
       </View>
       <ModalComponent

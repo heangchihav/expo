@@ -1,9 +1,9 @@
 import { Image, StyleSheet, Text, View, Dimensions, TouchableOpacity } from 'react-native';
-import React, { useContext, useEffect } from 'react';
-import { DrawerContentScrollView, DrawerItem, DrawerItemList } from '@react-navigation/drawer';
+import React, { useContext, } from 'react';
+import { DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import { useRouter } from 'expo-router';
-import { ThemeContext } from '../contexts/ThemeContext';
-import { Colors } from '../constants/Colors';
+import { ThemeContext } from '../../contexts/ThemeContext';
+import { Colors } from '../../constants/Colors';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const CustomDrawerContent = (props: any) => {
