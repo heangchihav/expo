@@ -1,6 +1,7 @@
 // src/contexts/ThemeContext.tsx
 import React, { createContext, useState, useEffect } from 'react';
 import { Appearance } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type Theme = 'system' | 'light' | 'dark';
 
@@ -17,11 +18,24 @@ export const ThemeContext = createContext<ThemeContextProps>({
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>('system');
 
-  // Determine system theme
+  // Determine system theme and set it
   useEffect(() => {
-    const systemTheme = Appearance.getColorScheme();
-    if (theme === 'system' && systemTheme) {
-      setTheme(systemTheme as Theme);
+    async function loadTheme() {
+      const storedTheme = await AsyncStorage.getItem('theme');
+      const systemTheme = Appearance.getColorScheme();
+      if (storedTheme) {
+        setTheme(storedTheme as Theme);
+      } else if (systemTheme) {
+        setTheme(systemTheme as Theme);
+      }
+    }
+    loadTheme();
+  }, []);
+
+  // Apply the theme when changed
+  useEffect(() => {
+    if (theme !== 'system') {
+      AsyncStorage.setItem('theme', theme);
     }
   }, [theme]);
 

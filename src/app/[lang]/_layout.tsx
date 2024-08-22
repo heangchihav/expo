@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Slot, usePathname, useRouter } from 'expo-router';
@@ -8,15 +8,20 @@ import { useIsLargeScreen } from '../../hooks/useIsLargeScreen';
 import { ScrollView, View } from 'react-native';
 import UnderNav from '@/src/components/UnderNav';
 import { Drawer } from 'expo-router/drawer';
-import { colorScheme } from '@/src/hooks/useColorScheme';
 import Navbar from '@/src/components/Navbar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ModalComponent from '@/src/components/Modal';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import CustomDrawerContent from '@/src/navigation/CustomDrawerContent';
+import { Colors } from '@/src/constants/Colors';
+import { ThemeContext } from '@/src/contexts/ThemeContext';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 function LayoutContent() {
+  const { theme } = useContext(ThemeContext);
+  const isDarkMode = theme === 'dark';
   const isLargeScreen = useIsLargeScreen();
   const [loaded] = useFonts({
     SpaceMono: require('../../../assets/fonts/SpaceMono-Regular.ttf'),
@@ -25,6 +30,7 @@ function LayoutContent() {
   const router = useRouter();
   const { language, setLanguage } = useLanguage();
   const [modalVisible, setModalVisible] = useState(false);
+
   useEffect(() => {
     async function initialize() {
       const hasVisited = await AsyncStorage.getItem('hasVisited');
@@ -33,13 +39,12 @@ function LayoutContent() {
         await AsyncStorage.setItem('hasVisited', 'true');
       }
     }
+
     if (loaded) {
       SplashScreen.hideAsync();
 
       const handleRedirect = async () => {
         const urlLanguage = (pathname.split('/')[1] as Language) || 'en';
-
-        // Validate and set the language
         const validLanguages: Language[] = ['en', 'fr'];
         if (validLanguages.includes(urlLanguage)) {
           setLanguage(urlLanguage);
@@ -57,11 +62,13 @@ function LayoutContent() {
       initialize();
     }
   }, [loaded, pathname, language, setLanguage, router]);
+
   if (!loaded) {
     return null;
   }
+
   return (
-    <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <NavigationThemeProvider value={isDarkMode ? DarkTheme : DefaultTheme}>
       <View style={{ flex: 1 }}>
         {isLargeScreen ? (
           <View style={{ flex: 1 }}>
@@ -74,7 +81,18 @@ function LayoutContent() {
             </ScrollView>
           </View>
         ) : (
-          <Drawer />
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <Drawer drawerContent={CustomDrawerContent} 
+              screenOptions={{
+                drawerActiveBackgroundColor: isDarkMode ? Colors.dark.tabIconSelected : Colors.light.tabIconSelected,
+                drawerActiveTintColor: isDarkMode ? Colors.dark.text : Colors.light.text,
+                drawerStyle: {
+                  backgroundColor: isDarkMode ? Colors.dark.background : Colors.light.background
+                }
+              }}>
+
+            </Drawer>
+          </GestureHandlerRootView>
         )}
       </View>
       <ModalComponent
@@ -84,7 +102,6 @@ function LayoutContent() {
     </NavigationThemeProvider>
   );
 }
-
 export default function LanguageLayout() {
   return <LayoutContent />;
 }
