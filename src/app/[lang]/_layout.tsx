@@ -5,7 +5,7 @@ import { Slot, usePathname, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { Language, useLanguage } from '../../contexts/LanguageContext';
 import { useIsLargeScreen } from '../../hooks/useIsLargeScreen';
-import { ScrollView, View } from 'react-native';
+import { Button, ScrollView, View } from 'react-native';
 import UnderNav from '@/src/components/UnderNav';
 import Navbar from '@/src/components/Navbar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -13,11 +13,11 @@ import ModalComponent from '@/src/components/Modal';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ThemeContext } from '@/src/contexts/ThemeContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import DrawerGroup from './(drawer)/_layout';
+import { StackNavigator } from './(stack)/_layout';
 import ContactPage from './(tabs)/contact';
 import Promotion from './(tabs)/promotion';
+import SlideInModal from '@/src/components/navigation/SlideInModal';
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 const Tab = createBottomTabNavigator();
 
@@ -31,13 +31,16 @@ function LayoutContent() {
   const pathname = usePathname();
   const router = useRouter();
   const { language, setLanguage } = useLanguage();
-  const [modalVisible, setModalVisible] = useState(false);
+  const [newsModalVisible, setNewsModalVisible] = useState(false);
+  const [menuModalVisible, setMenuModalVisible] = useState(false);
+
+  const toggleModal = () => setMenuModalVisible(prev => !prev);
 
   useEffect(() => {
     async function initialize() {
       const hasVisited = await AsyncStorage.getItem('hasVisited');
       if (!hasVisited) {
-        setModalVisible(true);
+        setNewsModalVisible(true);
         await AsyncStorage.setItem('hasVisited', 'true');
       }
     }
@@ -83,20 +86,25 @@ function LayoutContent() {
             </ScrollView>
           </View>
         ) : (
-          <Tab.Navigator initialRouteName='home' screenOptions={{ headerShown: false }}>
-            <Tab.Screen name='home' component={DrawerGroup} />
-            <Tab.Screen name='contact' component={ContactPage} />
-            <Tab.Screen name='promotion' component={Promotion} />
-          </Tab.Navigator>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <Button title="Open Menu" onPress={toggleModal} />
+            <SlideInModal visible={menuModalVisible} closeModal={toggleModal} />
+            <Tab.Navigator initialRouteName='home' screenOptions={{ headerShown: false }}>
+              <Tab.Screen name='home' component={StackNavigator} />
+              <Tab.Screen name='contact' component={ContactPage} />
+              <Tab.Screen name='promotion' component={Promotion} />
+            </Tab.Navigator>
+          </GestureHandlerRootView>
         )}
       </View>
       <ModalComponent
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
+        visible={newsModalVisible}
+        onClose={() => setNewsModalVisible(false)}
       />
     </NavigationThemeProvider>
   );
 }
+
 export default function LanguageLayout() {
   return <LayoutContent />;
 }
