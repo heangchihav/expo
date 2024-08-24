@@ -46,7 +46,7 @@ const Navbar = () => {
                     </TouchableOpacity>
                 </View>
                 <View style={styles.rightContainer}>
-                    <View style={{display:"flex",flexDirection:"row", gap:10}}>
+                    <View style={{ display: "flex", flexDirection: "row", gap: 10 }}>
                         <LanguageSwitcher />
                         <ThemeSwitcherButton />
                     </View>

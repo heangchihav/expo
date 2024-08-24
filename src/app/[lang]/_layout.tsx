@@ -13,10 +13,13 @@ import ModalComponent from '@/src/components/Modal';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ThemeContext } from '@/src/contexts/ThemeContext';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { StackNavigator } from './(stack)/_layout';
-import ContactPage from './(tabs)/contact';
-import Promotion from './(tabs)/promotion';
-import SlideInModal from '@/src/components/navigation/SlideInModal';
+import ContactPage from './contact';
+import SlideInModal from '@/src/components/SlideInModal';
+import HomePage from '.';
+import PromotionPage from './promotion';
+import { StackNavigator } from '@/src/navigation/StackNavigator';
+import SmallScreenNav from '@/src/components/SmallScreenNav';
+import BottomTab from '@/src/components/BottomTab';
 
 SplashScreen.preventAutoHideAsync();
 const Tab = createBottomTabNavigator();
@@ -32,9 +35,6 @@ function LayoutContent() {
   const router = useRouter();
   const { language, setLanguage } = useLanguage();
   const [newsModalVisible, setNewsModalVisible] = useState(false);
-  const [menuModalVisible, setMenuModalVisible] = useState(false);
-
-  const toggleModal = () => setMenuModalVisible(prev => !prev);
 
   useEffect(() => {
     async function initialize() {
@@ -87,13 +87,17 @@ function LayoutContent() {
           </View>
         ) : (
           <GestureHandlerRootView style={{ flex: 1 }}>
-            <Button title="Open Menu" onPress={toggleModal} />
-            <SlideInModal visible={menuModalVisible} closeModal={toggleModal} />
-            <Tab.Navigator initialRouteName='home' screenOptions={{ headerShown: false }}>
-              <Tab.Screen name='home' component={StackNavigator} />
-              <Tab.Screen name='contact' component={ContactPage} />
-              <Tab.Screen name='promotion' component={Promotion} />
-            </Tab.Navigator>
+
+            <View style={{ flex: 1 }}>
+              {/* <View style={{ zIndex: 1 }}>
+                <Navbar />
+              </View> */}
+              <ScrollView>
+                <SmallScreenNav />
+                <Slot />
+              </ScrollView>
+              <BottomTab />
+            </View>
           </GestureHandlerRootView>
         )}
       </View>

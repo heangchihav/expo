@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native';
-import { useLanguage } from '../../../contexts/LanguageContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import React from 'react';
 export default function ContactPage() {
   const { language } = useLanguage();

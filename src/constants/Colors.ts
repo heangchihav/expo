@@ -11,7 +11,7 @@ const lightText= "gray"
 export const Colors = {
   lightText,
   light: {
-    text: '#11181C',
+    text: '#000000',
     background: '#fff',
     tint: tintColorLight,
     icon: '#687076',

@@ -3,15 +3,15 @@ import React from 'react';
 
 import { createStackNavigator } from '@react-navigation/stack';
 
-import Sports from '../(games)/sport_lobby';
-import Casino from '../(games)/casino_lobby';
-import Slots from '../(games)/sport_lobby';
-import FishingLayout from '../(games)/(slots_finsh)/_layout';
-import NumberLobby from '../(games)/number_lobby';
-import Poker from '../(games)/poker_lobby';
-import Lottery from '../(games)/lott_lobby';
-import Cock from '../(games)/cock_lobby';
-import Promotion from '../(tabs)/promotion';
+import Sports from '../app/[lang]/(games)/sport_lobby';
+import Casino from '../app/[lang]/(games)/casino_lobby';
+import Slots from '../app/[lang]/(games)/sport_lobby';
+import FishingLayout from '../app/[lang]/(games)/(slots_finsh)/_layout';
+import NumberLobby from '../app/[lang]/(games)/number_lobby';
+import Poker from '../app/[lang]/(games)/poker_lobby';
+import Lottery from '../app/[lang]/(games)/lott_lobby';
+import Cock from '../app/[lang]/(games)/cock_lobby';
+import Promotion from '../app/[lang]/promotion';
 
 const Stack = createStackNavigator();
 
