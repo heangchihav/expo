@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import {
     StyleSheet,
-
     ScrollView,
     View,
     Text,
@@ -14,250 +13,213 @@ import FeatherIcon from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserProfileProps } from '../types/types';
 import { BlurView } from 'expo-blur';
+import { ThemeContext } from '../contexts/ThemeContext';
+import { Colors } from '../constants/Colors';
+import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 
 
 const UserProfile: React.FC<UserProfileProps> = ({ user, onPress, visible }) => {
+    const { theme } = useContext(ThemeContext);
+    const isDarkMode = theme === 'dark';
 
     const [form, setForm] = useState({
         emailNotifications: true,
         pushNotifications: false,
     });
 
+    // Shared values for each section to animate them
+    const springValue1 = useSharedValue(300);
+    const springValue2 = useSharedValue(300);
+    const springValue3 = useSharedValue(300);
+    const springValue4 = useSharedValue(300);
+
+    useEffect(() => {
+        if (visible) {
+            // Trigger the spring animations when modal becomes visible
+            springValue1.value = withSpring(0, { mass: 0.5, damping: 10, stiffness: 150 });
+            setTimeout(() => {
+                springValue2.value = withSpring(0, { mass: 0.5, damping: 10, stiffness: 150 });
+            }, 200);
+            setTimeout(() => {
+                springValue3.value = withSpring(0, { mass: 0.5, damping: 10, stiffness: 150 });
+            }, 400);
+            setTimeout(() => {
+                springValue4.value = withSpring(0, { mass: 0.5, damping: 10, stiffness: 150 });
+            }, 600);
+        } else {
+            // Reset the spring values to their initial off-screen position
+            springValue1.value = 300;
+            springValue2.value = 300;
+            springValue3.value = 300;
+            springValue4.value = 300;
+        }
+    }, [visible]);
+
+    // Animated styles for each section
+    const animatedStyle1 = useAnimatedStyle(() => {
+        return {
+            transform: [{ translateY: springValue1.value }],
+        };
+    });
+
+    const animatedStyle2 = useAnimatedStyle(() => {
+        return {
+            transform: [{ translateY: springValue2.value }],
+        };
+    });
+
+    const animatedStyle3 = useAnimatedStyle(() => {
+        return {
+            transform: [{ translateY: springValue3.value }],
+        };
+    });
+    const animatedStyle4 = useAnimatedStyle(() => {
+        return {
+            transform: [{ translateY: springValue4.value }],
+        };
+    });
     return (
         <Modal transparent visible={visible} onRequestClose={onPress} animationType='fade'>
             <BlurView intensity={90} tint={""} style={styles.blurBackground}>
                 <View style={styles.centeredView}>
                     <View style={styles.modalContent}>
                         <SafeAreaView style={{ flex: 1, backgroundColor: '', borderRadius: 20, width: "100%", height: "100%" }}>
-                            <View style={styles.header}>
+                            <LinearGradient
+                                colors={isDarkMode ? ['#ff7708', "#ffce08"] : ['#ffffff', '#ffffff']}
+                                style={[styles.header]}
+                                start={[0, 1]}
+                                end={[1, 0]}>
                                 <View style={styles.headerAction}>
-                                    <TouchableOpacity
-                                        onPress={onPress}>
-                                        <FeatherIcon
-                                            color="#000"
-                                            name="arrow-left"
-                                            size={24} />
+                                    <TouchableOpacity onPress={onPress}>
+                                        <FeatherIcon color={isDarkMode ? Colors.dark.text : Colors.light.text} name="arrow-left" size={24} />
                                     </TouchableOpacity>
                                 </View>
 
-                                <Text numberOfLines={1} style={styles.headerTitle}>
+                                <Text numberOfLines={1} style={[styles.headerTitle, { color: isDarkMode ? Colors.dark.text : Colors.light.text }]}>
                                     Settings
                                 </Text>
 
                                 <View style={[styles.headerAction, { alignItems: 'flex-end' }]}>
-                                    <TouchableOpacity
-                                        onPress={() => {
-                                            // handle onPress
-                                        }}>
-                                        <FeatherIcon
-                                            color="#000"
-                                            name="more-vertical"
-                                            size={24} />
+                                    <TouchableOpacity onPress={() => { }}>
+                                        <FeatherIcon color={isDarkMode ? Colors.dark.text : Colors.light.text} name="more-vertical" size={24} />
                                     </TouchableOpacity>
                                 </View>
-                            </View>
+                            </LinearGradient>
 
                             <ScrollView contentContainerStyle={styles.content}>
-                                <View style={[styles.section, { paddingTop: 4 }]}>
+                                {/* First Section with Spring Animation */}
+                                <Animated.View style={[styles.section, { paddingTop: 4 }, animatedStyle1]}>
                                     <Text style={styles.sectionTitle}>Account</Text>
-
                                     <View style={styles.sectionBody}>
-                                        <TouchableOpacity
-                                            onPress={() => {
-                                                // handle onPress
-                                            }}
-                                            style={styles.profile}>
+                                        <TouchableOpacity style={styles.profile}>
                                             <Image
                                                 alt=""
                                                 source={{
                                                     uri: user.avatarUri,
                                                 }}
                                                 style={styles.profileAvatar} />
-
                                             <View style={styles.profileBody}>
                                                 <Text style={styles.profileName}>{user.name}</Text>
-
                                                 <Text style={styles.profileHandle}>{user.email}</Text>
                                             </View>
-
-                                            <FeatherIcon
-                                                color="#bcbcbc"
-                                                name="chevron-right"
-                                                size={22} />
+                                            <FeatherIcon color="#bcbcbc" name="chevron-right" size={22} />
                                         </TouchableOpacity>
                                     </View>
-                                </View>
+                                </Animated.View>
 
-                                <View style={styles.section}>
+                                {/* Second Section with Spring Animation */}
+                                <Animated.View style={[styles.section, animatedStyle2]}>
                                     <Text style={styles.sectionTitle}>Preferences</Text>
-
                                     <View style={styles.sectionBody}>
                                         <View style={[styles.rowWrapper, styles.rowFirst]}>
-                                            <TouchableOpacity
-                                                onPress={() => {
-                                                    // handle onPress
-                                                }}
-                                                style={styles.row}>
+                                            <TouchableOpacity onPress={() => { /* handle onPress */ }} style={styles.row}>
                                                 <Text style={styles.rowLabel}>Language</Text>
-
                                                 <View style={styles.rowSpacer} />
-
                                                 <Text style={styles.rowValue}>English</Text>
-
-                                                <FeatherIcon
-                                                    color="#bcbcbc"
-                                                    name="chevron-right"
-                                                    size={19} />
+                                                <FeatherIcon color="#bcbcbc" name="chevron-right" size={19} />
                                             </TouchableOpacity>
                                         </View>
 
                                         <View style={styles.rowWrapper}>
-                                            <TouchableOpacity
-                                                onPress={() => {
-                                                    // handle onPress
-                                                }}
-                                                style={styles.row}>
+                                            <TouchableOpacity onPress={() => { /* handle onPress */ }} style={styles.row}>
                                                 <Text style={styles.rowLabel}>Location</Text>
-
                                                 <View style={styles.rowSpacer} />
-
                                                 <Text style={styles.rowValue}>Los Angeles, CA</Text>
-
-                                                <FeatherIcon
-                                                    color="#bcbcbc"
-                                                    name="chevron-right"
-                                                    size={19} />
+                                                <FeatherIcon color="#bcbcbc" name="chevron-right" size={19} />
                                             </TouchableOpacity>
                                         </View>
 
                                         <View style={styles.rowWrapper}>
                                             <View style={styles.row}>
                                                 <Text style={styles.rowLabel}>Email Notifications</Text>
-
                                                 <View style={styles.rowSpacer} />
-
                                                 <Switch
-                                                    onValueChange={emailNotifications =>
-                                                        setForm({ ...form, emailNotifications })
-                                                    }
+                                                    onValueChange={emailNotifications => setForm({ ...form, emailNotifications })}
                                                     style={{ transform: [{ scaleX: 0.95 }, { scaleY: 0.95 }] }}
-                                                    value={form.emailNotifications} />
+                                                    value={form.emailNotifications}
+                                                />
                                             </View>
                                         </View>
 
                                         <View style={[styles.rowWrapper, styles.rowLast]}>
                                             <View style={styles.row}>
                                                 <Text style={styles.rowLabel}>Push Notifications</Text>
-
                                                 <View style={styles.rowSpacer} />
-
                                                 <Switch
-                                                    onValueChange={pushNotifications =>
-                                                        setForm({ ...form, pushNotifications })
-                                                    }
+                                                    onValueChange={pushNotifications => setForm({ ...form, pushNotifications })}
                                                     style={{ transform: [{ scaleX: 0.95 }, { scaleY: 0.95 }] }}
-                                                    value={form.pushNotifications} />
+                                                    value={form.pushNotifications}
+                                                />
                                             </View>
                                         </View>
                                     </View>
-                                </View>
+                                </Animated.View>
 
-                                <View style={styles.section}>
+                                {/* Third Section with Spring Animation */}
+                                <Animated.View style={[styles.section, animatedStyle3]}>
                                     <Text style={styles.sectionTitle}>Resources</Text>
-
                                     <View style={styles.sectionBody}>
                                         <View style={[styles.rowWrapper, styles.rowFirst]}>
-                                            <TouchableOpacity
-                                                onPress={() => {
-                                                    // handle onPress
-                                                }}
-                                                style={styles.row}>
+                                            <TouchableOpacity onPress={() => { /* handle onPress */ }} style={styles.row}>
                                                 <Text style={styles.rowLabel}>Contact Us</Text>
-
                                                 <View style={styles.rowSpacer} />
-
-                                                <FeatherIcon
-                                                    color="#bcbcbc"
-                                                    name="chevron-right"
-                                                    size={19} />
+                                                <FeatherIcon color="#bcbcbc" name="chevron-right" size={19} />
                                             </TouchableOpacity>
                                         </View>
-
                                         <View style={styles.rowWrapper}>
-                                            <TouchableOpacity
-                                                onPress={() => {
-                                                    // handle onPress
-                                                }}
-                                                style={styles.row}>
+                                            <TouchableOpacity onPress={() => { /* handle onPress */ }} style={styles.row}>
                                                 <Text style={styles.rowLabel}>Report Bug</Text>
-
                                                 <View style={styles.rowSpacer} />
-
-                                                <FeatherIcon
-                                                    color="#bcbcbc"
-                                                    name="chevron-right"
-                                                    size={19} />
+                                                <FeatherIcon color="#bcbcbc" name="chevron-right" size={19} />
                                             </TouchableOpacity>
                                         </View>
-
                                         <View style={styles.rowWrapper}>
-                                            <TouchableOpacity
-                                                onPress={() => {
-                                                    // handle onPress
-                                                }}
-                                                style={styles.row}>
+                                            <TouchableOpacity onPress={() => { /* handle onPress */ }} style={styles.row}>
                                                 <Text style={styles.rowLabel}>Rate in App Store</Text>
-
                                                 <View style={styles.rowSpacer} />
-
-                                                <FeatherIcon
-                                                    color="#bcbcbc"
-                                                    name="chevron-right"
-                                                    size={19} />
+                                                <FeatherIcon color="#bcbcbc" name="chevron-right" size={19} />
                                             </TouchableOpacity>
                                         </View>
-
                                         <View style={[styles.rowWrapper, styles.rowLast]}>
-                                            <TouchableOpacity
-                                                onPress={() => {
-                                                    // handle onPress
-                                                }}
-                                                style={styles.row}>
+                                            <TouchableOpacity onPress={() => { /* handle onPress */ }} style={styles.row}>
                                                 <Text style={styles.rowLabel}>Terms and Privacy</Text>
-
                                                 <View style={styles.rowSpacer} />
-
-                                                <FeatherIcon
-                                                    color="#bcbcbc"
-                                                    name="chevron-right"
-                                                    size={19} />
+                                                <FeatherIcon color="#bcbcbc" name="chevron-right" size={19} />
                                             </TouchableOpacity>
                                         </View>
                                     </View>
-                                </View>
+                                </Animated.View>
 
-                                <View style={styles.section}>
+                                <Animated.View style={[styles.section, animatedStyle4]}>
                                     <View style={styles.sectionBody}>
-                                        <View
-                                            style={[
-                                                styles.rowWrapper,
-                                                styles.rowFirst,
-                                                styles.rowLast,
-                                                { alignItems: 'center' },
-                                            ]}>
-                                            <TouchableOpacity
-                                                onPress={() => {
-                                                    // handle onPress
-                                                }}
-                                                style={styles.row}>
-                                                <Text style={[styles.rowLabel, styles.rowLabelLogout]}>
-                                                    Log Out
-                                                </Text>
+                                        <View style={[styles.rowWrapper, styles.rowFirst, styles.rowLast, { alignItems: 'center' }]}>
+                                            <TouchableOpacity onPress={() => { /* handle onPress */ }} style={styles.row}>
+                                                <Text style={[styles.rowLabel, styles.rowLabelLogout]}>Log Out</Text>
                                             </TouchableOpacity>
                                         </View>
                                     </View>
-                                </View>
-                                <Text style={styles.contentFooter}>App Version 2.24 #50491</Text>
+                                </Animated.View>
                             </ScrollView>
                         </SafeAreaView>
                     </View>
@@ -265,10 +227,12 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onPress, visible }) => 
             </BlurView>
         </Modal>
     );
-}
-export default UserProfile
+};
+export default UserProfile;
+
 const styles = StyleSheet.create({
     blurBackground: {
+
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
@@ -280,21 +244,13 @@ const styles = StyleSheet.create({
         height: '100%',
     },
     modalContent: {
-        backgroundColor: 'rgba(255, 255, 255, 0.2)', // Glassmorphism effect
-        borderRadius: 20,
         width: '90%', // Adjust width based on screen size
         maxWidth: 600, // Maximum width for larger screens
         height: '90%', // Adjust height
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.8,
-        shadowRadius: 4,
-        elevation: 5,
     },
     /** Header */
     header: {
+        borderRadius: 20,
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -310,7 +266,6 @@ const styles = StyleSheet.create({
     headerTitle: {
         fontSize: 19,
         fontWeight: '600',
-        color: '#000',
         flexGrow: 1,
         flexShrink: 1,
         flexBasis: 0,

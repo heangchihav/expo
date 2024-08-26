@@ -1,33 +1,33 @@
-import React, { useContext, useEffect, useState, useRef } from 'react';
-import { Modal, View, Text, StyleSheet, Animated, Dimensions, ImageBackground, TouchableWithoutFeedback, ScrollView, TouchableOpacity, Image } from 'react-native';
+import React, { useEffect, useState, useContext } from 'react';
+import { Modal, View, Text, StyleSheet, Dimensions, ImageBackground, TouchableWithoutFeedback, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { ThemeContext } from '@/src/contexts/ThemeContext';
 import { BlurView } from 'expo-blur';
 import AvatarModal from './AvatarModal';
 import Svg, { Defs, LinearGradient, Stop, Text as SvgText } from 'react-native-svg';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, withSpring } from 'react-native-reanimated';
 
 const SlideInModal = ({ visible, closeModal }: { visible: boolean; closeModal: () => void }) => {
   const { theme } = useContext(ThemeContext);
-  const isDarkMode = theme === 'dark';
+  // const isDarkMode = theme === 'dark';
+  const isDarkMode = true;
 
   const [showModal, setShowModal] = useState(visible);
-  const slideAnim = useRef(new Animated.Value(-Dimensions.get('window').width)).current;
+  const slideAnim = useSharedValue(-Dimensions.get('window').width);
 
   useEffect(() => {
     if (visible) {
       setShowModal(true);
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
-    } else { 
-      Animated.timing(slideAnim, {
-        toValue: -Dimensions.get('window').width,
-        duration: 300,
-        useNativeDriver: true,
-      }).start(() => setShowModal(false));
+      slideAnim.value = withTiming(0, { duration: 300 });
+    } else {
+      slideAnim.value = withTiming(-Dimensions.get('window').width, { duration: 300 }, () => setShowModal(false));
     }
   }, [visible]);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateX: slideAnim.value }],
+    };
+  });
 
   const menuItems = [
     { id: '1', title: 'Sport' },
@@ -59,7 +59,7 @@ const SlideInModal = ({ visible, closeModal }: { visible: boolean; closeModal: (
         <View style={styles.modalBackground}>
           <View style={styles.overlay} />
           <TouchableWithoutFeedback>
-            <Animated.View style={[styles.modalContainer, { transform: [{ translateX: slideAnim }] }]}>
+            <Animated.View style={[styles.modalContainer, animatedStyle]}>
               <ImageBackground
                 source={{ uri: modalBackgroundImage }}
                 style={styles.modalBackgroundImage}
@@ -83,35 +83,60 @@ const SlideInModal = ({ visible, closeModal }: { visible: boolean; closeModal: (
                     tint={isDarkMode ? 'dark' : 'light'}
                   >
                     <ScrollView style={styles.menuSection}>
-                      {menuItems.map((item) => (
-                        <TouchableOpacity key={item.id} onPress={closeModal} style={styles.menuItemContainer}>
-                          <ImageBackground
-                            source={{ uri: menuItemBackground }}
-                            style={styles.menuItemBackground}
-                            resizeMode="cover"
-                          >
-                            <Svg height="40" width="100%" style={styles.gradientText}>
-                              <Defs>
-                                <LinearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                  <Stop offset="0%" stopColor="#FF6F00" />
-                                  <Stop offset="100%" stopColor="#FFAB00" />
-                                </LinearGradient>
-                              </Defs>
-                              <SvgText
-                                x="50%"
-                                y="50%"
-                                fontSize="18"
-                                fill="url(#grad)"
-                                textAnchor="middle"
-                                dy=".3em"
-                                fontWeight="bold"
+                      {menuItems.map((item, index) => {
+                        // Shared animation values for each item
+                        const translateY = useSharedValue(-20);
+                        const opacity = useSharedValue(0);
+
+                        useEffect(() => {
+                          if (visible) {
+                            setTimeout(() => {
+                              translateY.value = withSpring(0, { mass: 0.5, damping: 10, stiffness: 150 });
+                              opacity.value = withSpring(1);
+                            }, index * 180); // delay for each item
+                          } else {
+                            translateY.value = withTiming(-20, { duration: 300 });
+                            opacity.value = withTiming(0, { duration: 300 });
+                          }
+                        }, [visible]);
+
+                        const animatedItemStyle = useAnimatedStyle(() => ({
+                          transform: [{ translateY: translateY.value }],
+                          opacity: opacity.value,
+                        }));
+
+                        return (
+                          <Animated.View key={item.id} style={[styles.menuItemContainer, animatedItemStyle]}>
+                            <TouchableOpacity onPress={closeModal} style={styles.menuItemContainer}>
+                              <ImageBackground
+                                source={{ uri: menuItemBackground }}
+                                style={styles.menuItemBackground}
+                                resizeMode="cover"
                               >
-                                {item.title}
-                              </SvgText>
-                            </Svg>
-                          </ImageBackground>
-                        </TouchableOpacity>
-                      ))}
+                                <Svg height="40" width="100%" style={styles.gradientText}>
+                                  <Defs>
+                                    <LinearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                      <Stop offset="0%" stopColor="#FF6F00" />
+                                      <Stop offset="100%" stopColor="#FFAB00" />
+                                    </LinearGradient>
+                                  </Defs>
+                                  <SvgText
+                                    x="50%"
+                                    y="50%"
+                                    fontSize="18"
+                                    fill="url(#grad)"
+                                    textAnchor="middle"
+                                    dy=".3em"
+                                    fontWeight="bold"
+                                  >
+                                    {item.title}
+                                  </SvgText>
+                                </Svg>
+                              </ImageBackground>
+                            </TouchableOpacity>
+                          </Animated.View>
+                        );
+                      })}
                     </ScrollView>
                   </BlurView>
                 </View>
@@ -203,12 +228,12 @@ const styles = StyleSheet.create({
   },
   menuItemContainer: {
     marginHorizontal: 10,
-    marginVertical: 5,
+    marginVertical: 3,
     borderRadius: 10,
     overflow: 'hidden',
   },
   menuItemBackground: {
-    paddingVertical: 10,
+    paddingVertical: 7,
     paddingHorizontal: 15,
     borderRadius: 10,
     justifyContent: 'center',
@@ -219,13 +244,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   closeButton: {
-    padding: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#FF6F00',
+    paddingVertical: 10,
+    borderRadius: 20,
+    marginHorizontal: 10,
+    marginBottom: 10,
   },
   closeButtonText: {
-    fontSize: 18,
     color: '#fff',
+    textAlign: 'center',
+    fontSize: 16,
   },
 });
 

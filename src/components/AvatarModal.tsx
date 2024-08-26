@@ -1,7 +1,6 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, TouchableOpacity, Image, } from 'react-native';
 import UserProfile from './userProfile';
-import { ThemeContext } from '../contexts/ThemeContext';
 import { User } from '../types/types';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -12,8 +11,6 @@ const AvatarModal: React.FC = () => {
         setAvatarModalVisible(!isAvatarModalVisible);
     };
 
-    const { theme } = useContext(ThemeContext);
-    const isDarkMode = theme === 'dark';
 
     const user: User = {
         name: 'John Doe',
