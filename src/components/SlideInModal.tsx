@@ -1,27 +1,28 @@
 import React, { useContext, useEffect, useState, useRef } from 'react';
-import { Modal, View, StyleSheet, Text, Image, TouchableOpacity, Dimensions, TouchableWithoutFeedback, ScrollView, Animated, ImageBackground } from 'react-native';
+import { Modal, View, Text, StyleSheet, Animated, Dimensions, ImageBackground, TouchableWithoutFeedback, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { ThemeContext } from '@/src/contexts/ThemeContext';
 import { BlurView } from 'expo-blur';
-import { Colors } from '../constants/Colors';
+import AvatarModal from './AvatarModal';
+import Svg, { Defs, LinearGradient, Stop, Text as SvgText } from 'react-native-svg';
 
 const SlideInModal = ({ visible, closeModal }: { visible: boolean; closeModal: () => void }) => {
   const { theme } = useContext(ThemeContext);
   const isDarkMode = theme === 'dark';
 
   const [showModal, setShowModal] = useState(visible);
-  const slideAnim = useRef(new Animated.Value(-Dimensions.get('window').width)).current; // Start position off-screen left
+  const slideAnim = useRef(new Animated.Value(-Dimensions.get('window').width)).current;
 
   useEffect(() => {
     if (visible) {
       setShowModal(true);
       Animated.timing(slideAnim, {
-        toValue: 0, // Slide to screen
+        toValue: 0,
         duration: 300,
         useNativeDriver: true,
       }).start();
-    } else {
+    } else { 
       Animated.timing(slideAnim, {
-        toValue: -Dimensions.get('window').width, // Slide off-screen left
+        toValue: -Dimensions.get('window').width,
         duration: 300,
         useNativeDriver: true,
       }).start(() => setShowModal(false));
@@ -45,7 +46,7 @@ const SlideInModal = ({ visible, closeModal }: { visible: boolean; closeModal: (
     : 'https://img.freepik.com/premium-photo/lucky-love-closeup-view-red-casino-dice-ultimate-gamblers_983420-240197.jpg';
 
   const headerImage = isDarkMode
-    ? 'https://img.okezone.com/content/2022/08/23/337/2652958/ppatk-blokir-421-rekening-judi-online-senilai-rp730-miliar-MlK1SZbtKp.jpg'
+    ? 'https://res.cloudinary.com/da8ox9rlr/image/upload/v1724657760/icg/Snipaste_2024-08-26_02-35-23_dut26h.png'
     : 'https://thumbs.dreamstime.com/b/horizontal-red-casino-background-your-pad-your-screen-55173136.jpg';
 
   const menuItemBackground = isDarkMode
@@ -64,28 +65,17 @@ const SlideInModal = ({ visible, closeModal }: { visible: boolean; closeModal: (
                 style={styles.modalBackgroundImage}
                 resizeMode="cover"
               >
-                {/* Content Wrapper for Header and Menu */}
                 <View style={styles.contentWrapper}>
-                  {/* Header Section */}
                   <View style={styles.headerSection}>
                     <Image
                       source={{ uri: headerImage }}
                       style={styles.headerImage}
                       resizeMode="cover"
                     />
-
-                    {/* Avatar Positioned Overlapping the Background Image*/}
-                    <View style={styles.avatarContainer}>
-                      <Image
-                        source={{ uri: 'https://i.etsystatic.com/41373961/r/il/847040/5341725324/il_570xN.5341725324_9aye.jpg' }}
-                        style={styles.avatar}
-                      />
-                    </View> 
+                    <AvatarModal />
                   </View>
 
-                  {/* Divider Line */}
                   <View style={styles.dividerLine} />
-
                   {/* Menu Section with Glass Effect */}
                   <BlurView
                     style={styles.glassEffect}
@@ -100,7 +90,25 @@ const SlideInModal = ({ visible, closeModal }: { visible: boolean; closeModal: (
                             style={styles.menuItemBackground}
                             resizeMode="cover"
                           >
-                            <Text style={[styles.menuItem, { color: isDarkMode ? Colors.dark.text : Colors.light.text }]}>{item.title}</Text>
+                            <Svg height="40" width="100%" style={styles.gradientText}>
+                              <Defs>
+                                <LinearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                  <Stop offset="0%" stopColor="#FF6F00" />
+                                  <Stop offset="100%" stopColor="#FFAB00" />
+                                </LinearGradient>
+                              </Defs>
+                              <SvgText
+                                x="50%"
+                                y="50%"
+                                fontSize="18"
+                                fill="url(#grad)"
+                                textAnchor="middle"
+                                dy=".3em"
+                                fontWeight="bold"
+                              >
+                                {item.title}
+                              </SvgText>
+                            </Svg>
                           </ImageBackground>
                         </TouchableOpacity>
                       ))}
@@ -156,14 +164,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerSection: {
-    height: 150,
+    height: 180,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     overflow: 'hidden',
     marginHorizontal: 10,
-    marginBottom:10,
+    marginBottom: 10,
     borderRadius: 20,
-    marginTop:30
+    marginTop: 30
   },
   headerImage: {
     width: '100%',
@@ -173,13 +181,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 50,
-    borderWidth: 2,
-    borderColor: '#fff',
   },
   dividerLine: {
     height: 1,
@@ -207,16 +208,15 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   menuItemBackground: {
-    paddingVertical: 15,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
   },
-  menuItem: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
+  gradientText: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   closeButton: {
     padding: 10,
