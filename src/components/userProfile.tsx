@@ -40,13 +40,13 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onPress, visible }) => 
             springValue1.value = withSpring(0, { mass: 0.5, damping: 10, stiffness: 150 });
             setTimeout(() => {
                 springValue2.value = withSpring(0, { mass: 0.5, damping: 10, stiffness: 150 });
-            }, 200);
+            }, 50);
             setTimeout(() => {
                 springValue3.value = withSpring(0, { mass: 0.5, damping: 10, stiffness: 150 });
-            }, 400);
+            }, 100);
             setTimeout(() => {
                 springValue4.value = withSpring(0, { mass: 0.5, damping: 10, stiffness: 150 });
-            }, 600);
+            }, 150);
         } else {
             // Reset the spring values to their initial off-screen position
             springValue1.value = 300;
@@ -81,10 +81,10 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onPress, visible }) => 
     });
     return (
         <Modal transparent visible={visible} onRequestClose={onPress} animationType='fade'>
-            <BlurView intensity={90} tint={""} style={styles.blurBackground}>
+            <BlurView intensity={100} tint={'dark'} style={styles.blurBackground}>
                 <View style={styles.centeredView}>
                     <View style={styles.modalContent}>
-                        <SafeAreaView style={{ flex: 1, backgroundColor: '', borderRadius: 20, width: "100%", height: "100%" }}>
+                        <View style={{ flex: 1, backgroundColor: '', borderRadius: 20, width: "100%", height: "100%" }}>
                             <LinearGradient
                                 colors={isDarkMode ? ['#ff7708', "#ffce08"] : ['#ffffff', '#ffffff']}
                                 style={[styles.header]}
@@ -114,11 +114,11 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onPress, visible }) => 
                                     <View style={styles.sectionBody}>
                                         <TouchableOpacity style={styles.profile}>
                                             <Image
-                                                alt=""
                                                 source={{
                                                     uri: user.avatarUri,
                                                 }}
-                                                style={styles.profileAvatar} />
+                                                style={styles.profileAvatar}
+                                            />
                                             <View style={styles.profileBody}>
                                                 <Text style={styles.profileName}>{user.name}</Text>
                                                 <Text style={styles.profileHandle}>{user.email}</Text>
@@ -127,6 +127,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onPress, visible }) => 
                                         </TouchableOpacity>
                                     </View>
                                 </Animated.View>
+
 
                                 {/* Second Section with Spring Animation */}
                                 <Animated.View style={[styles.section, animatedStyle2]}>
@@ -221,7 +222,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onPress, visible }) => 
                                     </View>
                                 </Animated.View>
                             </ScrollView>
-                        </SafeAreaView>
+                        </View>
                     </View>
                 </View>
             </BlurView>
@@ -232,7 +233,6 @@ export default UserProfile;
 
 const styles = StyleSheet.create({
     blurBackground: {
-
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',

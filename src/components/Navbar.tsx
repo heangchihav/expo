@@ -67,12 +67,12 @@ const Navbar = () => {
                             <Text style={styles.authText}>Sign Up</Text>
                         </TouchableOpacity>
                     </View>
-
                 </View>
             </View>
             <LoginModal visible={loginModalVisible} onClose={closeLoginModal} />
             <SignUpModal visible={signUpModalVisible} onClose={closeSignUpModal} />
         </View>
+
     );
 };
 

@@ -1,30 +1,30 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Slot, usePathname, useRouter } from 'expo-router';
+import { usePathname, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { Language, useLanguage } from '../../contexts/LanguageContext';
 import { useIsLargeScreen } from '../../hooks/useIsLargeScreen';
-import { Button, ScrollView, View } from 'react-native';
-import UnderNav from '@/src/components/UnderNav';
+import { View } from 'react-native';
 import Navbar from '@/src/components/Navbar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ModalComponent from '@/src/components/Modal';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ThemeContext } from '@/src/contexts/ThemeContext';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import ContactPage from './contact';
-import SlideInModal from '@/src/components/SlideInModal';
-import HomePage from '.';
-import PromotionPage from './promotion';
+import ContactPage from '../../screens/menus/contact';
+import PromotionPage from '../../screens/menus/promotion';
 import { StackNavigator } from '@/src/navigation/StackNavigator';
 import SmallScreenNav from '@/src/components/SmallScreenNav';
-import BottomTab from '@/src/components/BottomTab';
+import { createStackNavigator } from '@react-navigation/stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 SplashScreen.preventAutoHideAsync();
+
+const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-function LayoutContent() {
+const LayoutContent = () => {
   const { theme } = useContext(ThemeContext);
   const isDarkMode = theme === 'dark';
   const isLargeScreen = useIsLargeScreen();
@@ -49,13 +49,16 @@ function LayoutContent() {
       SplashScreen.hideAsync();
 
       const handleRedirect = async () => {
+        // Check the current URL's language segment
         const urlLanguage = (pathname.split('/')[1] as Language) || 'en';
         const validLanguages: Language[] = ['en', 'fr'];
+
         if (validLanguages.includes(urlLanguage)) {
           setLanguage(urlLanguage);
-          await AsyncStorage.setItem('lastValidLanguage', urlLanguage);
+          await AsyncStorage.setItem('language', urlLanguage);
         } else {
-          const lastValidLanguage = await AsyncStorage.getItem('lastValidLanguage');
+          // Redirect to the last valid language or default
+          const lastValidLanguage = await AsyncStorage.getItem('language');
           if (lastValidLanguage) {
             router.push(`/${lastValidLanguage}`);
           } else {
@@ -63,6 +66,7 @@ function LayoutContent() {
           }
         }
       };
+
       handleRedirect();
       initialize();
     }
@@ -76,28 +80,35 @@ function LayoutContent() {
     <NavigationThemeProvider value={isDarkMode ? DarkTheme : DefaultTheme}>
       <View style={{ flex: 1 }}>
         {isLargeScreen ? (
-          <View style={{ flex: 1 }}>
+          <GestureHandlerRootView style={{ flex: 1 }}>
             <View style={{ zIndex: 1 }}>
               <Navbar />
             </View>
-            <ScrollView>
-              <UnderNav />
-              <Slot />
-            </ScrollView>
-          </View>
+            <Stack.Navigator initialRouteName='Home' screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="Home" component={StackNavigator} />
+              <Stack.Screen name="Contact" component={ContactPage} />
+              <Stack.Screen name="Promotion" component={PromotionPage} />
+            </Stack.Navigator>
+          </GestureHandlerRootView>
         ) : (
           <GestureHandlerRootView style={{ flex: 1 }}>
-
-            <View style={{ flex: 1 }}>
-              {/* <View style={{ zIndex: 1 }}>
-                <Navbar />
-              </View> */}
-              <ScrollView>
+            <SafeAreaView style={{ flex: 1 }}>
+              <View style={{ zIndex: 1 }}>
                 <SmallScreenNav />
-                <Slot />
-              </ScrollView>
-              <BottomTab />
-            </View>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Tab.Navigator
+                  initialRouteName='Home'
+                  screenOptions={{
+                    headerShown: false,
+                  }}
+                >
+                  <Tab.Screen name="Home" component={StackNavigator} />
+                  <Tab.Screen name="Contact" component={ContactPage} />
+                  <Tab.Screen name="Promotion" component={PromotionPage} />
+                </Tab.Navigator>
+              </View>
+            </SafeAreaView>
           </GestureHandlerRootView>
         )}
       </View>
@@ -109,6 +120,4 @@ function LayoutContent() {
   );
 }
 
-export default function LanguageLayout() {
-  return <LayoutContent />;
-}
+export default LayoutContent;

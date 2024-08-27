@@ -4,42 +4,51 @@ import { ThemeContext } from '@/src/contexts/ThemeContext';
 import { BlurView } from 'expo-blur';
 import AvatarModal from './AvatarModal';
 import Svg, { Defs, LinearGradient, Stop, Text as SvgText } from 'react-native-svg';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming, withSpring } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, withTiming, withSpring, withDelay } from 'react-native-reanimated';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { RootStackParamList } from '../types/navigation';
+import { MenuItem, SlideInModalProps } from '../types/types';
 
-const SlideInModal = ({ visible, closeModal }: { visible: boolean; closeModal: () => void }) => {
+const SlideInModal: React.FC<SlideInModalProps> = ({ visible, closeModal }) => {
   const { theme } = useContext(ThemeContext);
-  // const isDarkMode = theme === 'dark';
-  const isDarkMode = true;
-
+  const isDarkMode = theme === 'dark';
   const [showModal, setShowModal] = useState(visible);
+  const [activeMenuItem, setActiveMenuItem] = useState<string | null>(null);
   const slideAnim = useSharedValue(-Dimensions.get('window').width);
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+
+  const menuItems: MenuItem[] = [
+    { id: '1', title: 'Sport', screen: 'SportScreen' },
+    { id: '2', title: 'Live Casino', screen: 'LiveCasinoScreen' },
+    { id: '3', title: 'Slots', screen: 'SlotsScreen' },
+    { id: '4', title: 'Fishing Games', screen: 'FishingGamesScreen' },
+    { id: '5', title: 'Number', screen: 'NumberScreen' },
+    { id: '6', title: 'Poker', screen: 'PokerScreen' },
+    { id: '7', title: 'Lottery', screen: 'LotteryScreen' },
+    { id: '8', title: 'Cockfight', screen: 'CockfightScreen' },
+    { id: '9', title: 'Promotion', screen: 'PromotionScreen' },
+  ];
 
   useEffect(() => {
     if (visible) {
       setShowModal(true);
       slideAnim.value = withTiming(0, { duration: 300 });
     } else {
-      slideAnim.value = withTiming(-Dimensions.get('window').width, { duration: 300 }, () => setShowModal(false));
+      slideAnim.value = withTiming(-Dimensions.get('window').width, { duration: 300 });
+      setTimeout(() => setShowModal(false), 300);
     }
   }, [visible]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: slideAnim.value }],
-    };
-  });
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: slideAnim.value }],
+  }));
 
-  const menuItems = [
-    { id: '1', title: 'Sport' },
-    { id: '2', title: 'Live Casino' },
-    { id: '3', title: 'Slots' },
-    { id: '4', title: 'Fishing Games' },
-    { id: '5', title: 'Number' },
-    { id: '6', title: 'Poker' },
-    { id: '7', title: 'Lottery' },
-    { id: '8', title: 'Cockfight' },
-    { id: '9', title: 'Promotion' },
-  ];
+  const handleMenuItemPress = (id: string, screen: keyof RootStackParamList) => {
+    setActiveMenuItem(id);
+    closeModal();
+    navigation.navigate(screen);
+  };
 
   const modalBackgroundImage = isDarkMode
     ? 'https://img.freepik.com/premium-photo/vibrant-blue-poker-table-background-sets-stage-exciting-gameplay_1000124-99940.jpg'
@@ -53,8 +62,9 @@ const SlideInModal = ({ visible, closeModal }: { visible: boolean; closeModal: (
     ? 'https://static.vecteezy.com/system/resources/previews/035/973/649/large_2x/ai-generated-casino-theme-playing-cards-chips-and-golden-coins-on-black-background-concept-of-casino-game-poker-card-playing-gambling-chips-in-a-black-and-gold-style-banner-backdrop-background-free-photo.jpg'
     : 'https://img.freepik.com/free-psd/realistic-casino-items-illustration_23-2150688787.jpg';
 
+
   return (
-    <Modal transparent visible={showModal} onRequestClose={closeModal}>
+    <Modal transparent statusBarTranslucent visible={showModal} onRequestClose={closeModal}>
       <TouchableWithoutFeedback onPress={closeModal}>
         <View style={styles.modalBackground}>
           <View style={styles.overlay} />
@@ -65,83 +75,92 @@ const SlideInModal = ({ visible, closeModal }: { visible: boolean; closeModal: (
                 style={styles.modalBackgroundImage}
                 resizeMode="cover"
               >
-                <View style={styles.contentWrapper}>
-                  <View style={styles.headerSection}>
-                    <Image
-                      source={{ uri: headerImage }}
-                      style={styles.headerImage}
-                      resizeMode="cover"
-                    />
-                    <AvatarModal />
-                  </View>
-
-                  <View style={styles.dividerLine} />
-                  {/* Menu Section with Glass Effect */}
-                  <BlurView
-                    style={styles.glassEffect}
-                    intensity={isDarkMode ? 70 : 50}
-                    tint={isDarkMode ? 'dark' : 'light'}
-                  >
-                    <ScrollView style={styles.menuSection}>
-                      {menuItems.map((item, index) => {
-                        // Shared animation values for each item
-                        const translateY = useSharedValue(-20);
-                        const opacity = useSharedValue(0);
-
-                        useEffect(() => {
-                          if (visible) {
-                            setTimeout(() => {
-                              translateY.value = withSpring(0, { mass: 0.5, damping: 10, stiffness: 150 });
-                              opacity.value = withSpring(1);
-                            }, index * 180); // delay for each item
-                          } else {
-                            translateY.value = withTiming(-20, { duration: 300 });
-                            opacity.value = withTiming(0, { duration: 300 });
-                          }
-                        }, [visible]);
-
-                        const animatedItemStyle = useAnimatedStyle(() => ({
-                          transform: [{ translateY: translateY.value }],
-                          opacity: opacity.value,
-                        }));
-
-                        return (
-                          <Animated.View key={item.id} style={[styles.menuItemContainer, animatedItemStyle]}>
-                            <TouchableOpacity onPress={closeModal} style={styles.menuItemContainer}>
-                              <ImageBackground
-                                source={{ uri: menuItemBackground }}
-                                style={styles.menuItemBackground}
-                                resizeMode="cover"
-                              >
-                                <Svg height="40" width="100%" style={styles.gradientText}>
-                                  <Defs>
-                                    <LinearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                      <Stop offset="0%" stopColor="#FF6F00" />
-                                      <Stop offset="100%" stopColor="#FFAB00" />
-                                    </LinearGradient>
-                                  </Defs>
-                                  <SvgText
-                                    x="50%"
-                                    y="50%"
-                                    fontSize="18"
-                                    fill="url(#grad)"
-                                    textAnchor="middle"
-                                    dy=".3em"
-                                    fontWeight="bold"
-                                  >
-                                    {item.title}
-                                  </SvgText>
-                                </Svg>
-                              </ImageBackground>
-                            </TouchableOpacity>
-                          </Animated.View>
-                        );
-                      })}
-                    </ScrollView>
-                  </BlurView>
+                <View style={styles.headerSection}>
+                  <Image
+                    source={{ uri: headerImage }}
+                    style={styles.headerImage}
+                    resizeMode="cover"
+                  />
+                  <AvatarModal />
                 </View>
 
-                {/* Close Button */}
+                <View style={styles.dividerLine} />
+
+                <BlurView
+                  style={styles.glassEffect}
+                  intensity={50}
+                  tint={isDarkMode ? 'dark' : 'light'}
+                >
+                  <ScrollView contentContainerStyle={styles.scrollView}>
+
+                    {menuItems.map((item, index) => {
+                      const translateY = useSharedValue(-20);
+                      const opacity = useSharedValue(0);
+                      useEffect(() => {
+                        if (visible) {
+                          // Apply delay using `withDelay`
+                          translateY.value = withDelay(
+                            index * 50, // Delay time in milliseconds
+                            withSpring(0, { mass: 0.5, damping: 10, stiffness: 150 })
+                          );
+                          opacity.value = withDelay(
+                            index * 50,
+                            withSpring(1)
+                          );
+                        } else {
+                          // Animate without delay
+                          translateY.value = withTiming(-20, { duration: 500 });
+                          opacity.value = withTiming(0, { duration: 500 });
+                        }
+                      }, [visible]);
+
+                      const animatedItemStyle = useAnimatedStyle(() => ({
+                        transform: [{ translateY: translateY.value }],
+                        opacity: opacity.value,
+                      }));
+
+                      const isActive = item.id === activeMenuItem;
+
+                      return (
+                        <Animated.View key={item.id} style={[styles.menuItemContainer, animatedItemStyle]}>
+                          <TouchableOpacity
+                            onPress={() => handleMenuItemPress(item.id, item.screen)}
+                            style={[
+                              styles.menuItemContainer,
+                              isActive && styles.activeMenuItemContainer,
+                            ]}
+                          >
+                            <ImageBackground
+                              source={{ uri: menuItemBackground }}
+                              style={styles.menuItemBackground}
+                              resizeMode="cover"
+                            >
+                              <Svg height="40" width="100%" style={styles.gradientText}>
+                                <Defs>
+                                  <LinearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <Stop offset="0%" stopColor="#FF6F00" />
+                                    <Stop offset="100%" stopColor="#FFAB00" />
+                                  </LinearGradient>
+                                </Defs>
+                                <SvgText
+                                  x="50%"
+                                  y="50%"
+                                  fontSize="18"
+                                  fill="url(#grad)"
+                                  textAnchor="middle"
+                                  dy=".3em"
+                                  fontWeight="bold"
+                                >
+                                  {item.title}
+                                </SvgText>
+                              </Svg>
+                            </ImageBackground>
+                          </TouchableOpacity>
+                        </Animated.View>
+                      );
+                    })}
+                  </ScrollView>
+                </BlurView>
                 <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
                   <Text style={styles.closeButtonText}>Close</Text>
                 </TouchableOpacity>
@@ -150,6 +169,7 @@ const SlideInModal = ({ visible, closeModal }: { visible: boolean; closeModal: (
           </TouchableWithoutFeedback>
         </View>
       </TouchableWithoutFeedback>
+
     </Modal>
   );
 };
@@ -157,46 +177,43 @@ const SlideInModal = ({ visible, closeModal }: { visible: boolean; closeModal: (
 const styles = StyleSheet.create({
   modalBackground: {
     flex: 1,
-    justifyContent: 'flex-start', // Aligns modal to slide in from the left
-    alignItems: 'flex-start', // Align modal from the left
-    backgroundColor: 'transparent',
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.5)', // Dim background
   },
   modalContainer: {
-    width: '80%',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '90%',
     maxWidth: 400,
     height: '100%',
     backgroundColor: 'transparent',
-    elevation: 5,
+    borderTopRightRadius: 30,
+    borderBottomRightRadius: 30,
+    overflow: 'hidden',
+    elevation: 10,
     shadowColor: '#000',
     shadowOffset: { width: -2, height: 0 },
     shadowOpacity: 0.5,
     shadowRadius: 8,
-    position: 'absolute',
-    left: 0, // Align the modal on the left side
-    borderTopRightRadius: 30, // Rounded corner on the right
-    borderBottomRightRadius: 30, // Rounded corner on the right
-    overflow: 'hidden',
   },
   modalBackgroundImage: {
     flex: 1,
+    width: '100%',
+    height: '100%',
   },
-  contentWrapper: {
-    flex: 1,
-    justifyContent: 'center',
-  },
+
   headerSection: {
-    height: 180,
+    height: 190,
     justifyContent: 'center',
     alignItems: 'flex-start',
     overflow: 'hidden',
     marginHorizontal: 10,
     marginBottom: 10,
     borderRadius: 20,
-    marginTop: 30
+    marginTop: 30,
   },
   headerImage: {
     width: '100%',
@@ -215,6 +232,7 @@ const styles = StyleSheet.create({
   },
   glassEffect: {
     flex: 1,
+    overflow: 'hidden',
     borderRadius: 20,
     marginHorizontal: 10,
     shadowColor: '#000',
@@ -222,13 +240,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 10,
   },
-  menuSection: {
-    paddingVertical: 7,
-    paddingHorizontal: 5,
+  scrollView: {
+    padding: 15,
+    gap: 15,
   },
   menuItemContainer: {
-    marginHorizontal: 10,
-    marginVertical: 3,
     borderRadius: 10,
     overflow: 'hidden',
   },
@@ -243,12 +259,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  activeMenuItemContainer: {
+    borderColor: '#FFAB00',
+    borderTopWidth: 3,
+    shadowOpacity: 0.5,
+    shadowRadius: 15,
+    elevation: 20,
+    shadowColor: "#FFAB00",
+    transform: [{ scale: 1 }],
+    backgroundColor: '#FFAB00',
+  },
   closeButton: {
     backgroundColor: '#FF6F00',
     paddingVertical: 10,
     borderRadius: 20,
     marginHorizontal: 10,
-    marginBottom: 10,
+    marginVertical: 10
+
   },
   closeButtonText: {
     color: '#fff',

@@ -69,6 +69,7 @@ function LayoutContent() {
     <NavigationThemeProvider value={currentTheme}>
       <Stack>
         <Stack.Screen name="[lang]" options={{ headerShown: false }} />
+        <Stack.Screen name="+not-found" options={{ headerShown: false }} />
       </Stack>
     </NavigationThemeProvider>
   );

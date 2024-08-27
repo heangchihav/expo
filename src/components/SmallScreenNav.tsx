@@ -10,21 +10,14 @@ const SmallScreenNav = () => {
 
   return (
     <View style={styles.container}>
-      {/* Icon to open the modal */}
       <TouchableOpacity onPress={toggleModal} style={styles.menuIconContainer}>
-        <Ionicons name="menu" size={30} color="#333" /> {/* Using the menu icon */}
+        <Ionicons name="menu" size={30} color="#333" /> 
       </TouchableOpacity>
-
-      {/* Company logo in the center */}
       <Image
-        source={{ uri: 'https://i.imgur.com/CDwyIk4.png' }} // Replace with your company logo URL
+        source={{ uri: 'https://i.imgur.com/CDwyIk4.png' }} 
         style={styles.logo}
       />
-
-      {/* Hidden space for alignment */}
       <View style={styles.placeholder} />
-
-      {/* Slide-in modal */}
       <SlideInModal visible={menuModalVisible} closeModal={toggleModal} />
     </View>
   );

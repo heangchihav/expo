@@ -1,30 +1,30 @@
 // src/screens/HomeScreen.tsx
 import React from 'react';
-
 import { createStackNavigator } from '@react-navigation/stack';
 
-import Sports from '../app/[lang]/(games)/sport_lobby';
-import Casino from '../app/[lang]/(games)/casino_lobby';
-import Slots from '../app/[lang]/(games)/sport_lobby';
-import FishingLayout from '../app/[lang]/(games)/(slots_finsh)/_layout';
-import NumberLobby from '../app/[lang]/(games)/number_lobby';
-import Poker from '../app/[lang]/(games)/poker_lobby';
-import Lottery from '../app/[lang]/(games)/lott_lobby';
-import Cock from '../app/[lang]/(games)/cock_lobby';
-import Promotion from '../app/[lang]/promotion';
+import Sports from '../screens/games/sport_lobby';
+import Casino from '../screens/games/casino_lobby';
+import Slots from '../screens/games/slots_lobby'; // Corrected from sport_lobby
+import FishingLayout from '../screens/(slots_finsh)/_layout';
+import NumberLobby from '../screens/games/number_lobby';
+import Poker from '../screens/games/poker_lobby';
+import Lottery from '../screens/games/lott_lobby';
+import Cock from '../screens/games/cock_lobby';
+import Promotion from '../screens/menus/promotion';
+import { RootStackParamList } from '../types/navigation';
 
-const Stack = createStackNavigator();
+const Stack = createStackNavigator<RootStackParamList>();
 
 export const StackNavigator = () => (
-  <Stack.Navigator>
-    <Stack.Screen name="Sport" component={Sports} />
-    <Stack.Screen name="Live Casino" component={Casino} />
-    <Stack.Screen name="Slots" component={Slots} />
-    <Stack.Screen name="Fishing Games" component={FishingLayout} />
-    <Stack.Screen name="Number" component={NumberLobby} />
-    <Stack.Screen name="Poker" component={Poker} />
-    <Stack.Screen name="Lottery" component={Lottery} />
-    <Stack.Screen name="Cockfight" component={Cock} />
-    <Stack.Screen name="Promotion" component={Promotion} />
+  <Stack.Navigator initialRouteName='SportScreen' screenOptions={{ headerShown: false }}>
+    <Stack.Screen name="SportScreen" component={Sports} />
+    <Stack.Screen name="LiveCasinoScreen" component={Casino} />
+    <Stack.Screen name="SlotsScreen" component={Slots} />
+    <Stack.Screen name="FishingGamesScreen" component={FishingLayout} />
+    <Stack.Screen name="NumberScreen" component={NumberLobby} />
+    <Stack.Screen name="PokerScreen" component={Poker} />
+    <Stack.Screen name="LotteryScreen" component={Lottery} />
+    <Stack.Screen name="CockfightScreen" component={Cock} />
+    <Stack.Screen name="PromotionScreen" component={Promotion} />
   </Stack.Navigator>
 );
