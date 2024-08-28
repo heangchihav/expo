@@ -100,7 +100,7 @@ const SlideInModal: React.FC<SlideInModalProps> = ({ visible, closeModal }) => {
                         if (visible) {
                           // Apply delay using `withDelay`
                           translateY.value = withDelay(
-                            index * 50, // Delay time in milliseconds
+                            index * 75, // Delay time in milliseconds
                             withSpring(0, { mass: 0.5, damping: 10, stiffness: 150 })
                           );
                           opacity.value = withDelay(

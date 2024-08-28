@@ -1,30 +1,27 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { usePathname, useRouter } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { Language, useLanguage } from '../../contexts/LanguageContext';
-import { useIsLargeScreen } from '../../hooks/useIsLargeScreen';
 import { View } from 'react-native';
 import Navbar from '@/src/components/Navbar';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import ModalComponent from '@/src/components/Modal';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ThemeContext } from '@/src/contexts/ThemeContext';
-import ContactPage from '../../screens/menus/contact';
-import PromotionPage from '../../screens/menus/promotion';
-import { StackNavigator } from '@/src/navigation/StackNavigator';
-import SmallScreenNav from '@/src/components/SmallScreenNav';
+import { Language, useLanguage } from '../../contexts/LanguageContext';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-SplashScreen.preventAutoHideAsync();
+import ContactPage from '../../screens/menus/contact';
+import PromotionPage from '../../screens/menus/promotion';
+import SmallScreenNav from '@/src/components/SmallScreenNav';
+import ModalComponent from '@/src/components/Modal';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router, usePathname } from 'expo-router';
+import { StackNavigator } from '@/src/navigation/StackNavigator';
+import { useIsLargeScreen } from '@/src/hooks/useIsLargeScreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-const LayoutContent = () => {
+const LanguageLayout = () => {
   const { theme } = useContext(ThemeContext);
   const isDarkMode = theme === 'dark';
   const isLargeScreen = useIsLargeScreen();
@@ -32,45 +29,31 @@ const LayoutContent = () => {
     SpaceMono: require('../../../assets/fonts/SpaceMono-Regular.ttf'),
   });
   const pathname = usePathname();
-  const router = useRouter();
-  const { language, setLanguage } = useLanguage();
+  const { setLanguage } = useLanguage();
   const [newsModalVisible, setNewsModalVisible] = useState(false);
 
   useEffect(() => {
-    async function initialize() {
-      const hasVisited = await AsyncStorage.getItem('hasVisited');
-      if (!hasVisited) {
-        setNewsModalVisible(true);
-        await AsyncStorage.setItem('hasVisited', 'true');
+    const handleLanguageChange = async () => {
+      const urlLanguage = (pathname.split('/')[1] as Language);
+      const validLanguages: Language[] = ['en', 'fr'];
+      if (validLanguages.includes(urlLanguage)) {
+        setLanguage(urlLanguage);
+        await AsyncStorage.setItem('language', urlLanguage);
+
+      } else {
+        const lastValidLanguage = await AsyncStorage.getItem('language');
+        if (lastValidLanguage) {
+          setLanguage(lastValidLanguage as Language);
+        } else {
+          router.push('/en'); // Fallback to default language if no valid language is found
+        }
       }
-    }
+    };
 
     if (loaded) {
-      SplashScreen.hideAsync();
-
-      const handleRedirect = async () => {
-        // Check the current URL's language segment
-        const urlLanguage = (pathname.split('/')[1] as Language) || 'en';
-        const validLanguages: Language[] = ['en', 'fr'];
-
-        if (validLanguages.includes(urlLanguage)) {
-          setLanguage(urlLanguage);
-          await AsyncStorage.setItem('language', urlLanguage);
-        } else {
-          // Redirect to the last valid language or default
-          const lastValidLanguage = await AsyncStorage.getItem('language');
-          if (lastValidLanguage) {
-            router.push(`/${lastValidLanguage}`);
-          } else {
-            router.push('/en');
-          }
-        }
-      };
-
-      handleRedirect();
-      initialize();
+      handleLanguageChange();
     }
-  }, [loaded, pathname, language, setLanguage, router]);
+  }, [loaded, pathname, setLanguage]);
 
   if (!loaded) {
     return null;
@@ -120,4 +103,4 @@ const LayoutContent = () => {
   );
 }
 
-export default LayoutContent;
+export default LanguageLayout;

@@ -49,13 +49,13 @@ export default function ThemeSwitcher() {
     <View style={styles.container}>
       <View style={[
         styles.switchContainer,
-        { backgroundColor: appliedTheme === 'dark' ? '#333' : '#fff' }
+         
       ]}>
         <Text style={[
           styles.themeText,
-          { color: appliedTheme === 'dark' ? '#fff' : '#000' }
+          { color: appliedTheme === 'dark' ? '#ffaa00' : '#ff0080' }
         ]}>
-          {isSwitchOn ? 'Dark Mode' : 'Light Mode'}
+          {isSwitchOn ? 'Dark' : 'Light'}
         </Text>
         <Switch
           value={isSwitchOn}
@@ -76,8 +76,6 @@ const styles = StyleSheet.create({
   switchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 7,
-    borderRadius: 20,
   },
   themeText: {
     fontSize: 16,

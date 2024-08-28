@@ -14,7 +14,7 @@ const LanguageContext = createContext<LanguageContextProps>({
 });
 
 interface LanguageProviderProps {
-  children: ReactNode; // Properly type the children prop
+  children: ReactNode;
 }
 
 export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
@@ -26,7 +26,6 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
       try {
         const storedLanguage = await AsyncStorage.getItem('language');
         if (storedLanguage) {
-          console.log('Loaded language from storage:', storedLanguage);
           setLanguage(storedLanguage as Language);
         }
       } catch (error) {
@@ -41,7 +40,6 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     // Save language to AsyncStorage whenever it changes
     const saveLanguage = async () => {
       try {
-        console.log('Saving language to storage:', language);
         await AsyncStorage.setItem('language', language);
       } catch (error) {
         console.error('Failed to save language to storage:', error);

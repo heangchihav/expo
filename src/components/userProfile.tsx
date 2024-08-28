@@ -17,6 +17,9 @@ import { ThemeContext } from '../contexts/ThemeContext';
 import { Colors } from '../constants/Colors';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import ThemeSwitcher from './ThemeSwitcherButton';
+import LanguageSwitcher from './LanguageSwitcher';
+import { useLanguage } from '../contexts/LanguageContext';
 
 
 const UserProfile: React.FC<UserProfileProps> = ({ user, onPress, visible }) => {
@@ -79,6 +82,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onPress, visible }) => 
             transform: [{ translateY: springValue4.value }],
         };
     });
+    const { language } = useLanguage(); // Get the current language
     return (
         <Modal transparent visible={visible} onRequestClose={onPress} animationType='fade'>
             <BlurView intensity={100} tint={'dark'} style={styles.blurBackground}>
@@ -129,17 +133,21 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onPress, visible }) => 
                                 </Animated.View>
 
 
+
                                 {/* Second Section with Spring Animation */}
                                 <Animated.View style={[styles.section, animatedStyle2]}>
                                     <Text style={styles.sectionTitle}>Preferences</Text>
                                     <View style={styles.sectionBody}>
                                         <View style={[styles.rowWrapper, styles.rowFirst]}>
-                                            <TouchableOpacity onPress={() => { /* handle onPress */ }} style={styles.row}>
+                                            <View style={[styles.row, { zIndex: 9999 }]}>
                                                 <Text style={styles.rowLabel}>Language</Text>
                                                 <View style={styles.rowSpacer} />
-                                                <Text style={styles.rowValue}>English</Text>
+                                                <Text style={styles.rowValue}>{language}</Text>
                                                 <FeatherIcon color="#bcbcbc" name="chevron-right" size={19} />
-                                            </TouchableOpacity>
+                                                <View>
+                                                    <LanguageSwitcher />
+                                                </View>
+                                            </View>
                                         </View>
 
                                         <View style={styles.rowWrapper}>
@@ -163,7 +171,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onPress, visible }) => 
                                             </View>
                                         </View>
 
-                                        <View style={[styles.rowWrapper, styles.rowLast]}>
+                                        <View style={styles.rowWrapper}>
                                             <View style={styles.row}>
                                                 <Text style={styles.rowLabel}>Push Notifications</Text>
                                                 <View style={styles.rowSpacer} />
@@ -172,6 +180,14 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, onPress, visible }) => 
                                                     style={{ transform: [{ scaleX: 0.95 }, { scaleY: 0.95 }] }}
                                                     value={form.pushNotifications}
                                                 />
+                                            </View>
+                                        </View>
+
+                                        <View style={[styles.rowWrapper, styles.rowLast]}>
+                                            <View style={styles.row}>
+                                                <Text style={styles.rowLabel}>Change Theme</Text>
+                                                <View style={styles.rowSpacer} />
+                                                <ThemeSwitcher />
                                             </View>
                                         </View>
                                     </View>
