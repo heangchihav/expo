@@ -8,5 +8,6 @@ export type RootStackParamList = {
   LotteryScreen: undefined;
   CockfightScreen: undefined;
   PromotionScreen: undefined;
-  // Add other screens if needed
+  StackNavigator: undefined; // Add this if you navigate to the StackNavigator
+  Tabs: undefined; // Add this if you need to navigate to the Tabs navigator
 };

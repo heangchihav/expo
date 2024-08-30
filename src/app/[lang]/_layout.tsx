@@ -1,12 +1,11 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider, useNavigation } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { View } from 'react-native';
 import Navbar from '@/src/components/Navbar';
 import { ThemeContext } from '@/src/contexts/ThemeContext';
 import { Language, useLanguage } from '../../contexts/LanguageContext';
 import { createStackNavigator } from '@react-navigation/stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ContactPage from '../../screens/menus/contact';
 import PromotionPage from '../../screens/menus/promotion';
@@ -14,12 +13,15 @@ import SmallScreenNav from '@/src/components/SmallScreenNav';
 import ModalComponent from '@/src/components/Modal';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { router, usePathname } from 'expo-router';
-import { StackNavigator } from '@/src/navigation/StackNavigator';
+import { SplashScreen, usePathname } from 'expo-router';
 import { useIsLargeScreen } from '@/src/hooks/useIsLargeScreen';
+import TabsNavigator from '@/src/navigation/TabsNavigator';
+import HomePage from '@/src/screens/menus';
+import { StackNavigator } from '@/src/navigation/StackNavigator';
 
+// Prevent the splash screen from auto-hiding before asset loading is complete.
+SplashScreen.preventAutoHideAsync();
 const Stack = createStackNavigator();
-const Tab = createBottomTabNavigator();
 
 const LanguageLayout = () => {
   const { theme } = useContext(ThemeContext);
@@ -31,6 +33,7 @@ const LanguageLayout = () => {
   const pathname = usePathname();
   const { setLanguage } = useLanguage();
   const [newsModalVisible, setNewsModalVisible] = useState(false);
+  const navigation = useNavigation();
 
   useEffect(() => {
     const handleLanguageChange = async () => {
@@ -39,19 +42,24 @@ const LanguageLayout = () => {
       if (validLanguages.includes(urlLanguage)) {
         setLanguage(urlLanguage);
         await AsyncStorage.setItem('language', urlLanguage);
-
       } else {
-        const lastValidLanguage = await AsyncStorage.getItem('language');
-        if (lastValidLanguage) {
-          setLanguage(lastValidLanguage as Language);
-        } else {
-          router.push('/en'); // Fallback to default language if no valid language is found
-        }
+        navigation.goBack();
       }
     };
 
+    async function initialize() {
+      const hasVisited = await AsyncStorage.getItem('hasVisited');
+      if (!hasVisited) {
+        setNewsModalVisible(true);
+        await AsyncStorage.setItem('hasVisited', 'true');
+      }
+    }
+
+    handleLanguageChange();
+    initialize();
+
     if (loaded) {
-      handleLanguageChange();
+      SplashScreen.hideAsync();
     }
   }, [loaded, pathname, setLanguage]);
 
@@ -68,7 +76,7 @@ const LanguageLayout = () => {
               <Navbar />
             </View>
             <Stack.Navigator initialRouteName='Home' screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="Home" component={StackNavigator} />
+              <Stack.Screen name="Home" component={HomePage} />
               <Stack.Screen name="Contact" component={ContactPage} />
               <Stack.Screen name="Promotion" component={PromotionPage} />
             </Stack.Navigator>
@@ -80,16 +88,10 @@ const LanguageLayout = () => {
                 <SmallScreenNav />
               </View>
               <View style={{ flex: 1 }}>
-                <Tab.Navigator
-                  initialRouteName='Home'
-                  screenOptions={{
-                    headerShown: false,
-                  }}
-                >
-                  <Tab.Screen name="Home" component={StackNavigator} />
-                  <Tab.Screen name="Contact" component={ContactPage} />
-                  <Tab.Screen name="Promotion" component={PromotionPage} />
-                </Tab.Navigator>
+                <Stack.Navigator screenOptions={{headerShown:false}}>
+                  <Stack.Screen name="Tabs" component={TabsNavigator} />
+                  <Stack.Screen name="StackNavigator" component={StackNavigator} />
+                </Stack.Navigator>
               </View>
             </SafeAreaView>
           </GestureHandlerRootView>

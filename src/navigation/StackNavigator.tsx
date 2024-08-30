@@ -1,7 +1,5 @@
-// src/screens/HomeScreen.tsx
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-
 import Sports from '../screens/games/sport_lobby';
 import Casino from '../screens/games/casino_lobby';
 import Slots from '../screens/games/slots_lobby'; // Corrected from sport_lobby
@@ -12,11 +10,10 @@ import Lottery from '../screens/games/lott_lobby';
 import Cock from '../screens/games/cock_lobby';
 import Promotion from '../screens/menus/promotion';
 import { RootStackParamList } from '../types/navigation';
-
 const Stack = createStackNavigator<RootStackParamList>();
 
 export const StackNavigator = () => (
-  <Stack.Navigator initialRouteName='SportScreen' screenOptions={{ headerShown: false }}>
+  <Stack.Navigator screenOptions={{ headerShown: false }}>
     <Stack.Screen name="SportScreen" component={Sports} />
     <Stack.Screen name="LiveCasinoScreen" component={Casino} />
     <Stack.Screen name="SlotsScreen" component={Slots} />
